@@ -24,7 +24,7 @@ app.use(cors({
 }))
 
 
-app.get('/', async (req, res) => {
+app.get('/health', async (req, res) => {
   
 
   res.status(200).json({ message: 'Hello, World!' });
