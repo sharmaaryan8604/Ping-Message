@@ -7,6 +7,7 @@ import { clerkMiddleware } from '@clerk/express';
 import cors from 'cors'
 import fs from "fs"
 import path from "path"
+import job from './lib/cron.js';
 
 
 const app = express();
@@ -39,13 +40,12 @@ if(fs.existsSync(publicDir)){
   })
 }
 
-connectDb()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("MongoDB connection failed:", err);
-    process.exit(1);
-  });
+app.listen(PORT, () => {
+  onnectDb()
+  console.log(`Server is running on port ${PORT}`)
+
+  if(process.env.NODE_ENV === "production"){ 
+    job.start()
+  }
+
+});
