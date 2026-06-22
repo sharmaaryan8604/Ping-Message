@@ -9,6 +9,7 @@ import fs from "fs"
 import path from "path"
 import job from './lib/cron.js';
 import clerkWebhook from './webhooks/clerk.webhook.js';
+import authRoutes from './routes/auth.route.js';
 
 
 
@@ -32,6 +33,11 @@ app.get('/health', async (req, res) => {
 
   res.status(200).json({ message: 'Hello, World!' });
 });
+
+
+app.use("/api/auth",(req,res)=>{
+
+})
 
 //if the public directory does not exist, servethe static files from the public directory
 if(fs.existsSync(publicDir)){
