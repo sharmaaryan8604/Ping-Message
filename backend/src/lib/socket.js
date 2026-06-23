@@ -10,7 +10,7 @@ const allowedOrigin=process.env.FRONTEND_URL||"http://localhost:5173";
 
 const io=new Server(server,{cors:{origin:[allowedOrigin]}});
 
-function getRecieverSocketId(userId){
+function getReceiverSocketId(userId){
     return userSocketMap[userId];
 }
 
@@ -34,4 +34,4 @@ io.on("connection",(socket)=>{
     });
 
 });
-export{app,server,io,getRecieverSocketId}
+export{app, server , io, getReceiverSocketId}
