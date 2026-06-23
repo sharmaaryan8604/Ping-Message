@@ -10,6 +10,7 @@ import path from "path"
 import job from './lib/cron.js';
 import clerkWebhook from './webhooks/clerk.webhook.js';
 import authRoutes from './routes/auth.route.js';
+import messageRoutes from './routes/message.route.js';
 
 
 
@@ -35,9 +36,10 @@ app.get('/health', async (req, res) => {
 });
 
 
-app.use("/api/auth",(req,res)=>{
 
-})
+app.use("/api/auth",authRoutes);
+app.use("/api/messages",messageRoutes);
+
 
 //if the public directory does not exist, servethe static files from the public directory
 if(fs.existsSync(publicDir)){
