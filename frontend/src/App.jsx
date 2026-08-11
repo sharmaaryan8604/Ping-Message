@@ -7,7 +7,7 @@ function App() {
 
   return (
     <div>
-      <h1>My App</h1>
+      <h1 className="text-4xl text-cyan-600 bg-red-400">My App</h1>
       <header>
         <Show when="signed-out">
           <SignInButton mode='modal'/>
