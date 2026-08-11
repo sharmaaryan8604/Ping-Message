@@ -1,17 +1,22 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
-import { ClerkProvider } from '@clerk/react'
-import {BrowserRouter} from 'react-router'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App.jsx";
+import { ClerkProvider } from "@clerk/react";
+import { BrowserRouter } from "react-router";
 
-createRoot(document.getElementById('root')).render(
+const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+if (!clerkPublishableKey) {
+  throw new Error("Missing VITE_CLERK_PUBLISHABLE_KEY in frontend environment");
+}
+
+createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
+    <ClerkProvider publishableKey={clerkPublishableKey}>
       <BrowserRouter>
-       <App />
+        <App />
       </BrowserRouter>
-     
     </ClerkProvider>
   </StrictMode>,
-)
+);

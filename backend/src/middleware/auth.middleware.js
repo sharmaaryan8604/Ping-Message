@@ -1,6 +1,5 @@
 import { getAuth } from "@clerk/express";
 import User from "../models/Users.js";
-import { get } from "mongoose";
 
 
 
@@ -21,7 +20,7 @@ export async function protectRoute(req,res,next){
 
         next()
 
-    }catch(err){
+    }catch(error){
         console.error("Error in ProtectRoute middleware:",error.message);
         res.status(500).json({message:"Internal server error"});
 

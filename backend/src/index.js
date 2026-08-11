@@ -1,24 +1,23 @@
-
+import "./lib/env.js";
 import express from 'express'
-import "dotenv/config"
-import User from './models/Users.js'
 import { connectDb } from './lib/db.js';
 import { clerkMiddleware } from '@clerk/express';
 import cors from 'cors'
 import fs from "fs"
 import path from "path"
+import { fileURLToPath } from "url";
 import job from './lib/cron.js';
 import clerkWebhook from './webhooks/clerk.webhook.js';
 import authRoutes from './routes/auth.route.js';
 import messageRoutes from './routes/message.route.js';
 import { app,server } from './lib/socket.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-
-// const app = express();
-const PORT = process.env.PORT||5000;
+const PORT = Number(process.env.PORT ?? process.env.port ?? 5000);
 const FRONTEND_URL= process.env.FRONTEND_URL
-const publicDir=path.join(process.cwd(),"public")
+const publicDir=path.resolve(__dirname, "../public")
 
 
 app.use("/api/webhooks/clerk",express.raw({type:"application/json"}),clerkWebhook);
@@ -42,7 +41,7 @@ app.use("/api/auth",authRoutes);
 app.use("/api/messages",messageRoutes);
 
 
-//if the public directory does not exist, servethe static files from the public directory
+//if the public directory does not exist, serve the static files from the public directory
 if(fs.existsSync(publicDir)){
   app.use(express.static(publicDir))
 

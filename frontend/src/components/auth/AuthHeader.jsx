@@ -1,7 +1,7 @@
-import { APP_NAME, AppLogo } from "../chat/AppLogo";
-import { ThemePresetPicker } from "../chat/ThemePresetPicker";
-import { ThemeToggle } from "../chat/ThemeToggle";
-import { WallpaperPicker } from "../chat/WallpaperPicker.jsx";
+import { APP_NAME, AppLogo } from "../AppLogo";
+import { ThemePresetPicker } from "../ThemePresetPicker";
+import { ThemeToggle } from "../ThemeToggle";
+import { WallpaperPicker } from "../WallpaperPicker";
 
 function AuthHeader() {
   return (
