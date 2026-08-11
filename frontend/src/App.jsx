@@ -9,7 +9,9 @@ import { useAuth } from '@clerk/react'
 
 
 function App() {
-  const {isSignedIn,isLoaded}=useAuth()
+  const {isSignedIn,isLoaded}=useAuth();
+  //todo ;; make this better component
+  if(!isLoaded)return <p>loading....</p>
 
   return (
     <ThemeProvider>
