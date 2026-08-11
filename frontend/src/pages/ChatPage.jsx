@@ -37,25 +37,37 @@ function ChatPage() {
     isLargeScreen,
   } = useSelectedConversation();
 
-  // Load users and conversations
+  /*
+   * Load users and conversations
+   * when the chat page opens.
+   *
+   * Authentication is handled by the
+   * Axios interceptor in App.jsx.
+   */
   useEffect(() => {
     getUsers();
     getConversations();
   }, [getUsers, getConversations]);
 
-  // Load messages for selected conversation
+  /*
+   * Load messages whenever the user
+   * selects a conversation.
+   */
   useEffect(() => {
-    if (!activeConversationId) return;
+    if (!activeConversationId) {
+      return;
+    }
 
     getMessages(activeConversationId);
+
     subscribeToMessages(activeConversationId);
 
     return () => {
       unsubscribeFromMessages();
     };
   }, [
-    getMessages,
     activeConversationId,
+    getMessages,
     subscribeToMessages,
     unsubscribeFromMessages,
   ]);
@@ -66,8 +78,11 @@ function ChatPage() {
       style={frameStyle}
     >
       <div className="mx-auto flex w-full max-w-6xl flex-1 overflow-hidden rounded-2xl border border-border bg-background text-foreground">
+        
+        {/* Sidebar */}
         <ChatSidebar />
 
+        {/* Main chat area */}
         <div
           className={`flex-1 flex-col overflow-hidden ${
             !isLargeScreen && !activeConversationId
@@ -75,11 +90,16 @@ function ChatPage() {
               : "flex"
           }`}
         >
+          {/* Chat header */}
           <ChatHeader />
 
+          {/* Messages */}
           <MessageList />
 
-          {activeConversation ? <ChatComposer /> : null}
+          {/* Message input */}
+          {activeConversation ? (
+            <ChatComposer />
+          ) : null}
         </div>
       </div>
     </div>

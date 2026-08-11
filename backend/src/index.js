@@ -1,68 +1,180 @@
 import dns from "dns";
 
 dns.setServers([
-    "8.8.8.8",
-    "8.8.4.4"
+  "8.8.8.8",
+  "8.8.4.4",
 ]);
+
 import "./lib/env.js";
 
-import express from 'express'
-import { connectDb } from './lib/db.js';
-import { clerkMiddleware } from '@clerk/express';
-import cors from 'cors'
-import fs from "fs"
-import path from "path"
+import express from "express";
+import cors from "cors";
+import fs from "fs";
+import path from "path";
 import { fileURLToPath } from "url";
-import job from './lib/cron.js';
-import clerkWebhook from './webhooks/clerk.webhook.js';
-import authRoutes from './routes/auth.route.js';
-import messageRoutes from './routes/message.route.js';
-import { app,server } from './lib/socket.js';
+
+import { clerkMiddleware } from "@clerk/express";
+
+import { connectDb } from "./lib/db.js";
+import job from "./lib/cron.js";
+
+import clerkWebhook from "./webhooks/clerk.webhook.js";
+
+import authRoutes from "./routes/auth.route.js";
+import messageRoutes from "./routes/message.route.js";
+
+import { app, server } from "./lib/socket.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PORT = Number(process.env.PORT ?? process.env.port ?? 5000);
-const FRONTEND_URL= process.env.FRONTEND_URL
-const publicDir=path.resolve(__dirname, "../public")
+const PORT = Number(
+  process.env.PORT ?? process.env.port ?? 3000
+);
 
+const FRONTEND_URL =
+  process.env.FRONTEND_URL;
 
-app.use("/api/webhooks/clerk",express.raw({type:"application/json"}),clerkWebhook);
+const publicDir = path.resolve(
+  __dirname,
+  "../public"
+);
+
+// =====================================================
+// DEBUG
+// =====================================================
+
+console.log(
+  "Clerk secret key loaded:",
+  process.env.CLERK_SECRET_KEY
+    ? "YES"
+    : "NO"
+);
+
+console.log(
+  "Clerk secret key prefix:",
+  process.env.CLERK_SECRET_KEY?.slice(0, 8)
+);
+
+// =====================================================
+// CLERK MIDDLEWARE
+// IMPORTANT: MUST BE BEFORE OTHER MIDDLEWARE
+// =====================================================
+
+app.use(clerkMiddleware());
+
+// =====================================================
+// CORS
+// =====================================================
+
+app.use(
+  cors({
+    origin: FRONTEND_URL,
+    credentials: true,
+  })
+);
+
+// =====================================================
+// CLERK WEBHOOK
+// =====================================================
+
+app.use(
+  "/api/webhooks/clerk",
+  express.raw({
+    type: "application/json",
+  }),
+  clerkWebhook
+);
+
+// =====================================================
+// JSON BODY PARSER
+// =====================================================
+
 app.use(express.json());
 
-app.use(clerkMiddleware())
-app.use(cors({
-  origin: FRONTEND_URL,credentials:true
-}))
+// =====================================================
+// HEALTH CHECK
+// =====================================================
 
-
-app.get('/health', async (req, res) => {
-  
-
-  res.status(200).json({ message: 'Hello, World!' });
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    message: "Hello, World!",
+  });
 });
 
+// =====================================================
+// API ROUTES
+// =====================================================
 
+app.use(
+  "/api/auth",
+  authRoutes
+);
 
-app.use("/api/auth",authRoutes);
-app.use("/api/messages",messageRoutes);
+app.use(
+  "/api/messages",
+  messageRoutes
+);
 
+// =====================================================
+// SERVE FRONTEND IN PRODUCTION
+// =====================================================
 
-//if the public directory does not exist, serve the static files from the public directory
-if(fs.existsSync(publicDir)){
-  app.use(express.static(publicDir))
+if (fs.existsSync(publicDir)) {
+  app.use(
+    express.static(publicDir)
+  );
 
-  app.get("/{*any}",(req,res,next)=>{
-    res.sendFile(path.join(publicDir,"index.html"),(err)=>{next(err)})
-  })
+  app.get(
+    "/*any",
+    (req, res, next) => {
+      res.sendFile(
+        path.join(
+          publicDir,
+          "index.html"
+        ),
+        (err) => {
+          if (err) {
+            next(err);
+          }
+        }
+      );
+    }
+  );
 }
 
-server.listen(PORT, () => {
-  connectDb()
-  console.log(`Server is running on port ${PORT}`)
+// =====================================================
+// START SERVER
+// =====================================================
 
-  if(process.env.NODE_ENV === "production"){ 
-    job.start()
+const startServer = async () => {
+  try {
+    await connectDb();
+
+    console.log(
+      "Connected to MongoDB"
+    );
+
+    server.listen(PORT, () => {
+      console.log(
+        `Server is running on port ${PORT}`
+      );
+
+      if (
+        process.env.NODE_ENV ===
+        "production"
+      ) {
+        job.start();
+      }
+    });
+  } catch (error) {
+    console.error(
+      "Failed to start server:",
+      error
+    );
+
+    process.exit(1);
   }
+};
 
-});
+startServer();
