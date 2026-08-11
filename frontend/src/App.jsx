@@ -7,39 +7,84 @@ import { useAuth } from "@clerk/react";
 import PageLoader from "./components/PageLoader";
 import { useAuthStore } from "./store/useAuthStore";
 import { useEffect } from "react";
-
 import { Toaster } from "react-hot-toast";
+import { axiosInstance } from "./lib/axios";
 
 function App() {
-  const { isSignedIn, isLoaded } = useAuth();
+  const { isSignedIn, isLoaded, getToken } = useAuth();
 
-  // option 1
-  // const { checkAuth, isCheckingAuth, clearAuth } = useAuthStore();
-
-  // option 2 - better for performance
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const checkAuth = useAuthStore((state) => state.checkAuth);
-  const isCheckingAuth = useAuthStore((state) => state.isCheckingAuth);
+  const isCheckingAuth = useAuthStore(
+    (state) => state.isCheckingAuth
+  );
 
   useEffect(() => {
     if (!isLoaded) return;
 
-    if (isSignedIn) checkAuth();
-    else clearAuth();
-  }, [checkAuth, clearAuth, isLoaded, isSignedIn]);
+    const authenticate = async () => {
+      if (isSignedIn) {
+        try {
+          const token = await getToken();
 
-  if (!isLoaded || (isSignedIn && isCheckingAuth)) return <PageLoader />;
+          if (!token) {
+            console.error("Clerk token not available");
+            return;
+          }
+
+          axiosInstance.defaults.headers.common.Authorization =
+            `Bearer ${token}`;
+
+          await checkAuth();
+        } catch (error) {
+          console.error("Authentication error:", error);
+        }
+      } else {
+        delete axiosInstance.defaults.headers.common.Authorization;
+        clearAuth();
+      }
+    };
+
+    authenticate();
+  }, [
+    checkAuth,
+    clearAuth,
+    getToken,
+    isLoaded,
+    isSignedIn,
+  ]);
+
+  if (!isLoaded || (isSignedIn && isCheckingAuth)) {
+    return <PageLoader />;
+  }
 
   return (
     <ThemeProvider>
       <WallpaperProvider>
         <Routes>
-          <Route path="/" element={isSignedIn ? <ChatPage /> : <Navigate to={"/auth"} replace />} />
+          <Route
+            path="/"
+            element={
+              isSignedIn ? (
+                <ChatPage />
+              ) : (
+                <Navigate to="/auth" replace />
+              )
+            }
+          />
+
           <Route
             path="/auth"
-            element={!isSignedIn ? <AuthPage /> : <Navigate to={"/"} replace />}
+            element={
+              !isSignedIn ? (
+                <AuthPage />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
           />
         </Routes>
+
         <Toaster />
       </WallpaperProvider>
     </ThemeProvider>

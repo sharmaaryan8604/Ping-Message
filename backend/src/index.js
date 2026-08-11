@@ -1,4 +1,11 @@
+import dns from "dns";
+
+dns.setServers([
+    "8.8.8.8",
+    "8.8.4.4"
+]);
 import "./lib/env.js";
+
 import express from 'express'
 import { connectDb } from './lib/db.js';
 import { clerkMiddleware } from '@clerk/express';

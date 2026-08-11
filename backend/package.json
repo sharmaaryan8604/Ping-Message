@@ -6,7 +6,8 @@
   "scripts": {
     "build": "rimraf dist && shx mkdir -p dist && shx cp -r src/* dist ",
     "dev": "node --watch src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "seed":"node src/seeds/user.seed.js"
   },
   "keywords": [],
   "author": "",
